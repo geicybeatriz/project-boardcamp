@@ -13,7 +13,6 @@ export async function getAllCategories(req, res){
 
 export async function addCategories(req, res){
     const newCategory = req.body;
-    console.log(req.body);
     try {
         const verifyCategory = await connection.query(`
             SELECT * FROM categories 
