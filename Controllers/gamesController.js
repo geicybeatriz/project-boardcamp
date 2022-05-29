@@ -2,7 +2,11 @@ import connection from "./../db.js";
 
 export async function getGames(req, res){
     try {
-        const games = await connection.query(`SELECT * FROM games;`);
+        const games = await connection.query(`
+            SELECT games.*, categories.name as "categoryName" 
+            FROM games 
+            JOIN categories 
+            ON games."categoryId" = categories.id;`);
         res.status(200).send(games.rows);
     } catch (error) {
         console.log("erro", error);
