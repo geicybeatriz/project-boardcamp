@@ -1,9 +1,13 @@
 import connection from "./../db.js";
 
 export async function getGames(req, res){
-    
-
-
+    try {
+        const games = await connection.query(`SELECT * FROM games;`);
+        res.status(200).send(games.rows);
+    } catch (error) {
+        console.log("erro", error);
+        res.status(500).send("erro ao buscar jogos");
+    }
 }
 
 export async function addGame(req, res){
