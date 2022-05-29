@@ -5,12 +5,14 @@ import dotenv from "dotenv";
 dotenv.config();
 
 import categoriesController from "./Routes/categoriesRoute.js";
+import gameController from "./Routes/gamesRoute.js";
 
 const app = express();
 app.use(cors());
 app.use(json());
 
 app.use(categoriesController);
+app.use(gameController);
 
 
 const PORT = process.env.PORT || 4000;
