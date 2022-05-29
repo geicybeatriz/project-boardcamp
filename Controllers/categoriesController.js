@@ -13,7 +13,13 @@ export async function getAllCategories(req, res){
 
 export async function addCategories(req, res){
     const newCategory = req.body;
+    console.log(req.body);
     try {
+        const verifyCategory = await connection.query(`
+            SELECT * FROM categories 
+            WHERE "name"=$1`, [newCategory.name]);
+        if(verifyCategory.rows.length !== 0) return res.status(409).send("Esta categoria já existe!!");
+        
         const result = await connection.query(`
             INSERT INTO categories (name) 
             VALUES ($1);`, [newCategory.name]);
