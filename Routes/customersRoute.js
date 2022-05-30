@@ -1,5 +1,5 @@
 import { addCustomer, getAllCustomers, getCustomerById, updateCustomer} from "../Controllers/customersController.js";
-import { customerValidate } from "../Middlewares/CustomerValidation.js";
+import { customerValidate } from "../Middlewares/customerValidation.js";
 import { Router } from "express";
 
 const customerController = Router();
