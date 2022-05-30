@@ -50,14 +50,25 @@ export async function getAllCustomers(req, res){
 
 }
 
+export async function getCustomerById(req, res){
+    const id = parseInt(req.params.id);
+
+    try {
+        if(isNaN(id)) return res.status(400).send("id inválido");
+
+        const customers = await connection.query(`SELECT * FROM customers WHERE id=$1;`, [id]);
+        if(customers.rows.length === 0) return res.status(404).send("usuário não encontrado");
+        
+        res.status(200).send(customers.rows);
+    } catch (error) {
+        console.log("erro", error);
+        res.status(500).send("erro ao listar clientes");
+    }
+}
 
 
 
 // criar funções para o endpoint
-
-export async function getCustomerById(req, res){
-    
-}
 export async function updateCustomer(req, res){
 
 }
