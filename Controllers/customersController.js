@@ -1,26 +1,5 @@
 import connection from "./../db.js";
 
-//TODO: criar função que valida os dados do cliente, 
-// pesquisar por regex que possam ajudar no cpf, telefone
-//estrutura do cliente
-// procurar por query strings, pq eu esqueci kkkkkkkk
-const customer = {
-    id: 1,
-    name: 'João Alfredo',
-    phone: '21998899222',
-    cpf: '01234567890',
-    birthday: '1992-10-05'
-}
-
-// criar funções para o endpoint
-export async function getAllCustomers(req, res){
-
-}
-
-export async function getCustomerById(req, res){
-    
-}
-
 export async function addCustomer(req, res){
     const {name, phone, cpf, birthday} = req.body;
 
@@ -45,6 +24,40 @@ export async function addCustomer(req, res){
     }
 }
 
+export async function getAllCustomers(req, res){
+    const cpf = req.query.cpf;
+    const filterCPF = [];
+
+    try {
+        const customers = await connection.query(`SELECT * FROM customers;`);
+
+        if(cpf){
+            let listCpf = new RegExp(`^${cpf}`);
+            for (let i = 0; i < customers.rows.length; i++){
+                if(listCpf.test(customers.rows[i].cpf)){
+                    filterCPF.push(customers.rows[i]);
+                }
+            }
+            res.status(200).send(filterCPF);
+        }
+        else{
+            res.status(200).send(customers.rows);
+        }        
+    } catch (error) {
+        console.log("erro", error);
+        res.status(500).send("erro ao listar clientes");
+    }
+
+}
+
+
+
+
+// criar funções para o endpoint
+
+export async function getCustomerById(req, res){
+    
+}
 export async function updateCustomer(req, res){
 
 }
