@@ -6,6 +6,6 @@ const customerController = Router();
 customerController.get("/customers", getAllCustomers);
 customerController.get("/customers/:id", getCustomerById);
 customerController.post("/customers", customerValidate, addCustomer);
-customerController.put("/customers/:id", updateCustomer);
+customerController.put("/customers/:id", customerValidate, updateCustomer);
 
 export default customerController;

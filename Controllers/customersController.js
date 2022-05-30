@@ -58,17 +58,38 @@ export async function getCustomerById(req, res){
 
         const customers = await connection.query(`SELECT * FROM customers WHERE id=$1;`, [id]);
         if(customers.rows.length === 0) return res.status(404).send("usuário não encontrado");
-        
+
         res.status(200).send(customers.rows);
     } catch (error) {
         console.log("erro", error);
-        res.status(500).send("erro ao listar clientes");
+        res.status(500).send("erro ao buscar cliente");
     }
 }
 
-
-
-// criar funções para o endpoint
 export async function updateCustomer(req, res){
+    const id = parseInt(req.params.id);
+    const {name, phone, cpf, birthday} = req.body;
 
+    try {
+        if(isNaN(id)) return res.status(400).send("id inválido");
+
+        const checkCPF = await connection.query(`
+            SELECT * 
+            FROM customers 
+            WHERE cpf=$1 AND id!=$2`, [cpf, id]);
+        if(checkCPF.rows.length !== 0){
+            return res.status(409).send("Este usuário já está cadastrado");
+        }
+
+        await connection.query(`
+            UPDATE customers   
+            SET name=$1, phone=$2, cpf=$3, birthday=$4
+            WHERE id=$5;`, 
+            [name, phone, cpf, birthday, id]);
+        
+        res.sendStatus(200);
+    } catch (error) {
+        console.log("erro", error);
+        res.status(500).send("erro ao atualizar os dados do cliente");
+    }
 }
