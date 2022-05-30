@@ -86,3 +86,55 @@ export async function getRentals(req, res){
         res.status(500).send("erro ao buscar aluguéis");
     }
 }
+
+export async function finishRental(req, res){
+    const id = parseInt(req.params.id);
+    try {
+        const checkRental = await connection.query(`SELECT * FROM rentals WHERE id=$1;`, [id]);
+        if(checkRental.rows.length === 0 || checkRental.rows[0].returnDate !== null){
+            return res.status(400).send("aluguel não encontrado ou já está finalizado");
+        }
+
+        const checkGame = await connection.query(`
+        SELECT rentals.*, games."pricePerDay" 
+        FROM rentals 
+        JOIN games
+        ON rentals."gameId" = games.id WHERE rentals.id=$1;`, [id]);
+        
+        const deliveryDateInUTC = new Date();
+        const deliveryDateReal = new Date().getTime();
+        const dayInMS = 86400000;
+
+        const rentalData = checkGame.rows[0];
+        const realReturnDate = (rentalData.rentDate.getTime())+(rentalData.daysRented*dayInMS);
+        const daysDelayed = Math.round((realReturnDate-deliveryDateReal)/dayInMS);
+        const delayFee = daysDelayed*(rentalData.pricePerDay);
+
+        await connection.query(`
+        UPDATE rentals 
+        SET "returnDate"=$1, "delayFee"=$2 
+        WHERE id=$3;`,
+        [deliveryDateInUTC, delayFee, id]);
+
+        res.sendStatus(200);
+    } catch (error) {
+        console.log("erro", error);
+        res.status(500).send("erro ao finalizar aluguéis");
+    }
+
+}
+export async function deleteRental(req, res){
+    const id = parseInt(req.params.id);
+
+    try {
+        const checkRental = await connection.query(`SELECT * FROM rentals WHERE id=$1;`, [id]);
+        if(checkRental.rows.length === 0 || checkRental.rows[0].returnDate !== null){
+            return res.status(400).send("aluguel não encontrado ou já está finalizado");
+        }
+        await connection.query(`DELETE FROM rentals WHERE id=$1;`, [id]);
+        res.sendStatus(200);
+    } catch (error) {
+        console.log("erro", error);
+        res.status(500).send("erro ao deletar aluguel");
+    }
+}
