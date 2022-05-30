@@ -22,6 +22,7 @@ export async function getCustomerById(req, res){
 }
 
 export async function addCustomer(req, res){
+    
 
 }
 
