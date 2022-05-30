@@ -2,8 +2,6 @@ import connection from "./../db.js";
 
 export async function getGames(req, res){
     const nameGame = req.query.name;
-    console.log("recebo", nameGame);
-
     const filteredGame = [];
 
     try {
@@ -21,8 +19,7 @@ export async function getGames(req, res){
                 }
             }
             res.status(200).send(filteredGame);
-        }
-        else{
+        } else{
             res.status(200).send(games.rows);
         }
 

@@ -1,18 +1,5 @@
 import connection from "../db.js";
 
-// {
-//     id: 1,
-//     customerId: 1,
-//     gameId: 1,
-//     rentDate: '2021-06-20',    // data em que o aluguel foi feito
-//     daysRented: 3,             // por quantos dias o cliente agendou o aluguel
-//     returnDate: null,          // data que o cliente devolveu o jogo (null enquanto não devolvido)
-//     originalPrice: 4500,       // preço total do aluguel em centavos (dias alugados vezes o preço por dia do jogo)
-//     delayFee: null             // multa total paga por atraso (dias que passaram do prazo vezes o preço por dia do jogo)
-//   }
-
-
-//post /rentals
 export async function insertRental(req, res){
     const {customerId, gameId, daysRented} = req.body;
 
@@ -35,14 +22,67 @@ export async function insertRental(req, res){
     }
 }
 
-//get /rentals
 export async function getRentals(req, res){
+    const {customerId, gameId} = req.query;
+
     try {
-        const rentalList = await connection.query(`SELECT * FROM rentals`);
-        res.status(200).send(rentalList.rows);
+        if(customerId){
+            const rentalListUser = await connection.query(`SELECT * FROM rentals WHERE "customerId"=$1;`,
+            [customerId]);
+            if(rentalListUser.rows.length === 0) return res.status(404).send("usuário não encontrado");
+            return res.send(rentalListUser.rows);
+
+        } else if(gameId){
+            const rentalListGame = await connection.query(`SELECT * FROM rentals WHERE "gameId"=$1;`,
+            [gameId]);
+            if(rentalListGame.rows.length === 0) return res.status(404).send("jogo não encontrado");
+            return res.send(rentalListGame.rows);
+
+        } else{
+            const rentalList = await connection.query(`
+                SELECT rentals.*, 
+                        games.id as "gameId", 
+                        games.name as "gameName", 
+                        games."categoryId" as "gameCategoryId", 
+                        customers.name as "customerName", 
+                        customers.id as "customerId", 
+                        categories.id as "categoryId", 
+                        categories.name as "categoryName" 
+                FROM rentals
+                JOIN games
+                ON rentals."gameId" = games.id
+                JOIN customers
+                ON rentals."customerId" = customers.id
+                JOIN categories
+                ON games."categoryId" = categories.id`);
+            if(rentalList.rows.length === 0) return res.status(404).send("Ainda não há registros de aluguéis de jogos");
+
+            const result = rentalList.rows.map((rental) => {
+                return ({
+                    id:rental.id,
+                    customerId: rental.customerId,
+                    gameId: rental.gameId,
+                    rentDate: rental.rentDate,
+                    daysRented: rental.daysRented,
+                    returnDate: rental.returnDate,
+                    originalPrice:rental.originalPrice,
+                    delayFee: rental.delayFee,
+                    customer: {
+                        id: rental.customerId,
+                        name: rental.customerName
+                    },
+                    game: {
+                        id: rental.gameId,
+                        name: rental.gameName,
+                        categoryId: rental.categoryId,
+                        categoryName: rental.categoryName
+                    }
+                })
+            });
+            res.status(200).send(result);
+        }
     } catch (error) {
         console.log("erro", error);
         res.status(500).send("erro ao buscar aluguéis");
     }
-
 }
