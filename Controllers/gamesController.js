@@ -33,7 +33,6 @@ export async function getGames(req, res){
 }
 
 export async function addGame(req, res){
-    console.log(req.body);
     const {name, image, stockTotal, categoryId, pricePerDay} = req.body;
     
     try {

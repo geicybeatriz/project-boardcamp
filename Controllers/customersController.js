@@ -22,8 +22,27 @@ export async function getCustomerById(req, res){
 }
 
 export async function addCustomer(req, res){
-    
+    const {name, phone, cpf, birthday} = req.body;
 
+    try {
+        const checkCPF = await connection.query(`
+        SELECT * 
+        FROM customers 
+        WHERE cpf=$1`, [cpf]);
+        if(checkCPF.rows.length !== 0){
+            return res.status(409).send("Este usuário já está cadastrado");
+        }
+
+        await connection.query(`
+            INSERT INTO customers (name, phone, cpf, birthday) 
+            VALUES ($1, $2, $3, $4);`, 
+            [name, phone, cpf, birthday]);
+
+        res.status(201).send("cadastro realizado com sucesso");
+    } catch (error) {
+        console.log("erro", error);
+        res.status(500).send("erro ao cadastrar cliente");
+    }
 }
 
 export async function updateCustomer(req, res){
